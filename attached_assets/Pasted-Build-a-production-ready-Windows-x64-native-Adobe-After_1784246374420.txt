@@ -1,0 +1,121 @@
+Build a production-ready Windows x64 native Adobe After Effects effect plug-in named:
+
+IconFlow Native Picker
+Output: IconFlowNative.aex
+
+Do not build a CEP-only panel. This must be a native C++ After Effects SDK effect plug-in that can receive user clicks directly inside the After Effects Composition panel.
+
+Environment and build target:
+- Windows 10/11 x64
+- Adobe After Effects 2024 (24.x), x64
+- Adobe After Effects SDK installed locally
+- Visual Studio 2022 Build Tools / Visual Studio 2022
+- MSVC v143, Windows SDK
+- Build a Release x64 .aex plug-in
+- Use the actual SDK headers and the official CCU (Custom Comp UI) sample as the API reference. Do not invent Adobe SDK symbols, structures, or callbacks.
+- If the SDK path is missing, fail clearly with setup instructions. Never fake a successful .aex build.
+
+Core goal:
+Create ONE native effect that performs the important image-processing functionality of the existing IconFlow Recolor CEP extension and adds a real Composition-panel eyedropper.
+
+Required native UI behavior:
+1. Add a “Pick Background Color” control.
+2. Add 8 independent color-replacement slots:
+   - Enable checkbox
+   - Pick Source Color button
+   - Source color
+   - Target color
+   - Tolerance
+   - Softness
+3. When the user presses a pick button, activate a picking mode.
+4. While the effect is selected, use Custom Comp UI and After Effects UI events:
+   - PF_OutFlag_CUSTOM_UI
+   - PF_Cmd_EVENT
+   - PF_REGISTER_UI
+   - PF_Event_DO_CLICK
+   - PF_Event_ADJUST_CURSOR
+5. The cursor must change to an eyedropper/crosshair.
+6. The next click inside the Composition or Layer panel must sample the actual pixel under the click and write the sampled color into the selected Background or Source Color parameter.
+7. Support Ctrl-click for a 5x5 averaged sample.
+8. Escape cancels picking mode.
+9. Do NOT use Windows screen capture, global mouse hooks, browser EyeDropper API, CEP mouse coordinates, or sampleImage expressions. Use native After Effects Custom Comp UI event coordinates and the SDK CCU sample’s coordinate conversion.
+
+Effect controls:
+- Background keying:
+  - Enable Background Removal
+  - Background Color
+  - Color space / distance mode: RGB, Hue, Chroma
+  - Tolerance
+  - Softness
+  - Edge Choke / Expand
+  - Edge Cleanup
+  - Green Despill option
+- Color replacement:
+  - 8 mappings, each source-to-target
+  - Per-mapping tolerance and softness
+  - Preserve luminance option
+  - Global tint option
+- Glow:
+  - Enable Glow
+  - Threshold
+  - Radius
+  - Intensity
+  - Tint color
+- Do not copy, bundle, emulate, reverse engineer, or depend on the third-party Deep Glow plug-in. Implement a built-in simple glow only.
+
+Rendering requirements:
+- Non-destructive effect, operates on the selected layer.
+- Support 8-bit, 16-bit, and 32-bit float where the SDK permits.
+- Correctly handle premultiplied alpha.
+- Process order:
+  1. Background key/matte
+  2. Edge cleanup/choke/despill
+  3. Color mappings
+  4. Optional global tint
+  5. Glow
+- Use safe color-distance calculations with tolerance/softness falloff.
+- Implement CPU rendering first; prioritize correctness and stability.
+- Avoid crashes on empty frames, zero alpha, invalid parameters, and GPU-disabled environments.
+- No background worker thread may call After Effects SDK APIs.
+
+Project deliverables:
+1. Full C++ source code.
+2. Visual Studio 2022 solution and/or CMake project.
+3. .rc and PiPL resources required for a valid .aex effect.
+4. Build scripts:
+   - configure_windows.ps1
+   - build_release.ps1
+5. SDK path configurable using AE_SDK_ROOT environment variable.
+6. A clear error if AE_SDK_ROOT is not set or headers are missing.
+7. Automated unit tests for pure color-math functions outside After Effects.
+8. README_AR.md in Arabic:
+   - SDK setup
+   - Visual Studio setup
+   - build command
+   - output path
+   - installation path
+   - manual testing checklist in After Effects
+9. Add a minimal CEP bridge only as an OPTIONAL companion:
+   - It may apply the native effect to selected layers.
+   - It must not claim it can capture Composition clicks itself.
+   - The actual eyedropper must live in the native .aex effect.
+
+Manual acceptance tests:
+- Apply IconFlow Native Picker to a green-screen clip.
+- Press Pick Background Color.
+- Click green inside the Composition panel.
+- Verify the background becomes transparent.
+- Press Pick Source Color in mapping slot 1.
+- Click a colored icon region in the Composition panel.
+- Change Target Color and verify replacement.
+- Verify Ctrl-click averages a 5x5 pixel region.
+- Verify Escape cancels without changing the color.
+- Verify all controls work in AE 2024 x64.
+- Verify no dependency on Deep Glow.
+
+Implementation discipline:
+- Start by inspecting the installed AE SDK and locating the CCU sample.
+- Use the exact API names available in that SDK version.
+- Build early and fix compiler errors.
+- Do not write placeholder code pretending the Composition eyedropper works.
+- Report any SDK API uncertainty explicitly.
