@@ -1,0 +1,6 @@
+IconFlow Recolor v1.0.0
+
+The source files in this package may be modified for personal or internal
+production use. Adobe After Effects, CEP, and Deep Glow remain the property of
+their respective owners. This package does not distribute Deep Glow or any
+other third-party plug-in.

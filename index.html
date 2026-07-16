@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IconFlow Recolor</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="panel">
+    <header>
+      <div class="mark">IF</div>
+      <div>
+        <h1>IconFlow Recolor</h1>
+        <p>عزل الخلفية · إعادة تلوين · توهج</p>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="section-head">
+        <h2>1. عزل الخلفية</h2>
+        <span class="tag">Non-destructive</span>
+      </div>
+      <div class="segmented" id="backgroundMode" role="radiogroup" aria-label="لون الخلفية">
+        <label><input type="radio" name="background" value="black" checked><span>سوداء</span></label>
+        <label><input type="radio" name="background" value="green"><span>خضراء</span></label>
+        <label><input type="radio" name="background" value="white"><span>بيضاء</span></label>
+        <label><input type="radio" name="background" value="custom"><span>لون آخر</span></label>
+        <label><input type="radio" name="background" value="none"><span>بدون</span></label>
+      </div>
+      <div class="row custom-background" hidden>
+        <label for="customBg">لون الخلفية</label>
+        <input id="customBg" class="color" type="color" value="#000000">
+        <input id="customBgHex" class="hex" type="text" value="#000000" maxlength="7" spellcheck="false">
+        <button id="pickBackground" class="sample-source" type="button" title="التقاط لون يدويًا من شاشة الـComposition" aria-label="التقاط لون يدويًا من شاشة الـComposition"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.8 3.2 20.8 9.2 17.7 12.3 15.7 10.3 8.2 17.8 5.1 17.8 5.1 14.7 12.6 7.2 10.6 5.2zM4 20h10v2H4z"/></svg></button>
+      </div>
+      <div class="range-row">
+        <label for="matteTolerance">التسامح <output id="toleranceValue">18</output></label>
+        <input id="matteTolerance" type="range" min="1" max="100" value="18">
+      </div>
+      <div class="range-row">
+        <label for="matteSoftness">نعومة العزل <output id="softnessValue">8</output></label>
+        <input id="matteSoftness" type="range" min="0" max="100" value="8">
+      </div>
+      <div class="range-row">
+        <label for="edgeChoke">تنظيف/توسيع الحافة <output id="edgeChokeValue">0.0 px</output></label>
+        <input id="edgeChoke" type="range" min="-5" max="5" value="0" step="0.1">
+      </div>
+      <label class="check compact-check"><input id="edgeCleaner" type="checkbox" checked> <span>تنظيف حواف المات تلقائيًا</span></label>
+      <p class="hint">ارفعه عند بقاء هالة من الخلفية، واخفضه إذا اختفت حواف الأيقونة.</p>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <h2>2. استبدال الألوان</h2>
+        <button class="text-btn" id="addColor" type="button">+ لون</button>
+      </div>
+      <div class="color-head"><span>من</span><span>إلى</span><span></span></div>
+      <div id="colorMappings" class="mappings"></div>
+      <div class="range-row">
+        <label for="colorTolerance">تسامح استبدال اللون <output id="colorToleranceValue">10</output></label>
+        <input id="colorTolerance" type="range" min="0" max="100" value="10">
+      </div>
+      <div class="tint-all">
+        <label class="check"><input id="tintAll" type="checkbox"> <span>صبغ كل الألوان بلون واحد مع الاحتفاظ بالإضاءة</span></label>
+        <div class="color-input compact"><input id="tintAllPicker" type="color" value="#7D83FF"><input id="tintAllHex" class="hex" type="text" maxlength="7" value="#7D83FF" spellcheck="false"></div>
+      </div>
+      <div class="preset-row">
+        <label for="palettePreset">Preset سريع</label>
+        <select id="palettePreset">
+          <option value="custom">تخصيص يدوي</option>
+          <option value="electricBlue">أزرق كهربائي</option>
+          <option value="neonGreen">أخضر نيون</option>
+          <option value="magenta">ماجنتا</option>
+          <option value="gold">ذهبي</option>
+          <option value="ice">جليدي</option>
+        </select>
+      </div>
+      <p class="hint">أضف صفًا لكل لون في الأيقونة. التغييرات تبقى متزامنة مع الحركة الأصلية.</p>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <h2>3. التوهج</h2>
+        <span id="deepGlowState" class="tag neutral">تحقق من التوهج</span>
+      </div>
+      <label class="check"><input id="useGlow" type="checkbox" checked> <span>إضافة توهج بعد التلوين</span></label>
+      <label class="select-label" for="glowEngine">المحرّك</label>
+      <select id="glowEngine">
+        <option value="deep">Deep Glow إن وُجد، وإلا Glow المدمج</option>
+        <option value="builtin">Glow المدمج في After Effects</option>
+        <option value="none">بدون توهج</option>
+      </select>
+      <div class="range-row">
+        <label for="glowStrength">شدة Glow المدمج <output id="glowValue">0.8</output></label>
+        <input id="glowStrength" type="range" min="0" max="3" value="0.8" step="0.1">
+      </div>
+      <div class="range-row">
+        <label for="glowRadius">نصف قطر التوهج <output id="glowRadiusValue">45 px</output></label>
+        <input id="glowRadius" type="range" min="1" max="250" value="45">
+      </div>
+      <div class="range-row deep-only">
+        <label for="deepExposure">تعريض Deep Glow <output id="deepExposureValue">0.0</output></label>
+        <input id="deepExposure" type="range" min="-5" max="5" value="0" step="0.1">
+      </div>
+      <p class="hint">يتحكم نصف القطر والتعريض في Deep Glow عند توفر أسماء الخصائص المتوافقة؛ تبقى كل إعداداته متاحة من Effect Controls.</p>
+    </section>
+
+    <section class="options">
+      <label class="check live-option"><input id="autoApply" type="checkbox" checked> <span>تطبيق حي على الطبقة المحددة أثناء تعديل الإعدادات</span></label>
+      <label class="check"><input id="makeBackup" type="checkbox" checked> <span>إنشاء نسخة معالجة وإخفاء الأصل كنسخة احتياطية</span></label>
+      <label class="check"><input id="despill" type="checkbox" checked> <span>إزالة التسرب الأخضر عند اختيار الخلفية الخضراء</span></label>
+    </section>
+
+    <div id="status" class="status" role="status">حدّد طبقة فيديو أو Pre-comp؛ التحديث الحي مفعّل.</div>
+    <div class="actions">
+      <button id="clear" class="secondary" type="button">مسح تأثيرات IconFlow</button>
+      <button id="apply" class="primary" type="button">تطبيق الآن</button>
+    </div>
+    <footer>v1.5.0 · قطّارة شاشة الـComposition · تحديث حي · يدعم معالجة كل الطبقات المحددة · لا يضم Deep Glow.</footer>
+  </main>
+  <script src="js/CSInterface.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
