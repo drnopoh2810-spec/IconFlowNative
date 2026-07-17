@@ -1,44 +1,97 @@
-# IconFlow Recolor
+# IconFlow — Adobe After Effects Extension Suite
 
-An Adobe After Effects CEP (Common Extensibility Platform) extension panel (v1.5.0) for recoloring animated icons.
+Two deliverables in this project:
 
-## What it does
+---
 
-- Isolates backgrounds (black, green, white, or custom color) using Linear Color Key
-- Replaces individual icon colors while preserving animation timing
-- Applies glow effects (built-in AE Glow or optional Deep Glow plugin)
-- Non-destructive: creates a working copy, hides the original as a backup
+## 1. IconFlow Recolor (CEP Panel) — root folder
 
-## Stack
+An Adobe After Effects CEP (Common Extensibility Platform) panel (v1.5.0) for recoloring animated icons. Written in HTML/CSS/JS + ExtendScript.
 
-- **UI**: HTML/CSS/JS panel (`index.html`, `css/style.css`, `js/main.js`)
-- **AE bridge**: `js/CSInterface.js` (CEP bridge)
-- **ExtendScript**: `jsx/hostscript.jsx` (runs inside After Effects)
-- **Manifest**: `CSXS/manifest.xml` (CEP extension definition)
+- **UI**: `index.html`, `css/style.css`, `js/main.js`
+- **AE bridge**: `js/CSInterface.js`
+- **ExtendScript**: `jsx/hostscript.jsx`
+- **Manifest**: `CSXS/manifest.xml`
 
-## How to install (Windows)
+**Install (Windows):** Copy entire root folder to `%APPDATA%\Adobe\CEP\extensions\IconFlow-Recolor\`, enable CEP debug mode, open AE → `Window > Extensions (Legacy) > IconFlow Recolor`.
 
-1. Close After Effects.
-2. Copy the entire project folder to:
-   `%APPDATA%\Adobe\CEP\extensions\IconFlow-Recolor`
-   The manifest must end up at:
-   `%APPDATA%\Adobe\CEP\extensions\IconFlow-Recolor\CSXS\manifest.xml`
-3. Enable CEP debug mode (run once in PowerShell as a normal user):
-   ```powershell
-   9..12 | ForEach-Object {
-     $key = "HKCU:\Software\Adobe\CSXS.$_"
-     New-Item -Path $key -Force | Out-Null
-     New-ItemProperty -Path $key -Name PlayerDebugMode -Value 1 -PropertyType String -Force | Out-Null
-   }
-   ```
-4. Open After Effects → `Window > Extensions (Legacy) > IconFlow Recolor`.
+---
 
-## Requirements
+## 2. IconFlow Native Picker (C++ .aex) — `IconFlowNative/` folder
 
-- After Effects 2020 or newer (CEP 9+)
-- Windows
-- Deep Glow plugin (optional — falls back to built-in AE Glow if absent)
+A production-ready Windows x64 native Adobe After Effects SDK effect plugin. Written in C++17, targets AE 2024 (24.x), MSVC v143.
 
-## Notes
+**Core features:**
+- Background keying (RGB/Hue/Chroma distance modes) with edge choke/expand
+- 8 independent color-replacement slots with tolerance/softness falloff
+- Optional global tint with luminance preservation
+- Built-in glow (no Deep Glow dependency)
+- Real Composition-panel eyedropper via Custom Comp UI (`PF_OutFlag_CUSTOM_UI`)
+  - Crosshair cursor while picking (`PF_Event_ADJUST_CURSOR`)
+  - Click → samples pixel from comp, writes to color param (`PF_Event_DO_CLICK`)
+  - Ctrl+click → 5×5 averaged sample
+  - Escape → cancel pick
+- 8-bit, 16-bit, and 32-bit float rendering
+- Non-destructive, premultiplied-alpha-correct pipeline
 
-This extension cannot be "run" on Replit directly — it requires Adobe After Effects to function. Replit is used here for editing the source files.
+### File structure
+
+```
+IconFlowNative/
+├── src/
+│   ├── IconFlowNative.h        # Param indices, sequence data, entry point
+│   ├── IconFlowNative.cpp      # EffectMain, Custom Comp UI, SmartFX
+│   ├── ColorMath.h             # Pure color math (no AE SDK, header-only)
+│   ├── Renderer.h / .cpp       # 8/16/32-bit rendering pipeline
+│   └── IconFlowNative.rc       # Windows resources (PiPL + version)
+├── pipl/
+│   └── IconFlowNative.r        # PiPL Rez source (→ .rr via PiPLtool)
+├── tests/
+│   ├── ColorMathTests.cpp      # Standalone unit tests (no AE SDK)
+│   ├── ColorMathTests.vcxproj
+│   └── CMakeLists.txt
+├── cep-bridge/                 # OPTIONAL CEP launcher companion
+│   ├── index.html
+│   ├── js/bridge.js
+│   └── CSXS/manifest.xml
+├── IconFlowNative.vcxproj      # VS2022 project
+├── IconFlowNative.sln          # VS2022 solution
+├── CMakeLists.txt              # CMake alternative
+├── configure_windows.ps1       # First-time setup
+├── build_release.ps1           # Build + optional test + install
+└── README_AR.md                # Full Arabic build guide
+```
+
+### Build (Windows only)
+
+**Prerequisites:** VS2022 with "Desktop development with C++", AE SDK, `AE_SDK_ROOT` env var.
+
+```powershell
+# 1. Set SDK path (once)
+$env:AE_SDK_ROOT = "C:\Adobe\AfterEffectsSDK\2024"
+
+# 2. Configure (generates PiPL .rr, validates tools)
+.\IconFlowNative\configure_windows.ps1
+
+# 3. Build
+.\IconFlowNative\build_release.ps1
+
+# 4. Build + test + install to AE
+.\IconFlowNative\build_release.ps1 -RunTests -InstallToAE
+```
+
+Output: `IconFlowNative\build\Release\IconFlowNative.aex`
+
+Install to: `%PROGRAMFILES%\Adobe\Adobe After Effects 2024\Support Files\Plug-ins\IconFlow\`
+
+### SDK API uncertainties (documented in source)
+
+All uncertain API names are called out with `// SDK uncertainty:` comments in `src/IconFlowNative.cpp`. Key ones:
+- `PF_EventCallbacks.comp_to_layer` signature — compare against your SDK's `AE_EffectUI.h` and the CCU sample at `SDK_ROOT/Examples/Effect/CCU/`.
+- `PF_Cursor_CROSS_HAIR` constant name — grep for "Cursor" in `AE_EffectUI.h`.
+- `PF_WorldFlag_FLOAT` for 32-bit detection — grep for "WorldFlag" in `AE_Effect.h`.
+
+## User preferences
+
+- Deliver complete, compilable source with no placeholder code.
+- Report SDK API uncertainties explicitly rather than inventing symbols.

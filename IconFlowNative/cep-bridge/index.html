@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'">
+  <title>IconFlow Native Bridge</title>
+  <style>
+    body { margin: 0; padding: 10px; font-family: sans-serif; font-size: 13px;
+           background: #1c1c1c; color: #ccc; }
+    h1   { font-size: 14px; margin: 0 0 4px 0; color: #eee; }
+    p    { margin: 0 0 10px 0; font-size: 11px; color: #888; line-height: 1.4; }
+    .warn { background: #3a2800; border: 1px solid #7a5200; border-radius: 4px;
+            padding: 8px; margin-bottom: 10px; font-size: 11px; color: #ffa; }
+    button { width: 100%; padding: 7px; margin-bottom: 6px; border: none;
+             border-radius: 4px; cursor: pointer; font-size: 12px; }
+    .primary   { background: #0c6dd6; color: #fff; }
+    .secondary { background: #444; color: #ccc; }
+    button:hover { filter: brightness(1.15); }
+    #status { margin-top: 8px; font-size: 11px; color: #aaa;
+              border-top: 1px solid #333; padding-top: 6px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>IconFlow Native Bridge</h1>
+  <p>مرافق اختياري للإضافة الأصلية IconFlowNative.aex</p>
+
+  <div class="warn">
+    ⚠️ قطّارة اللون تعمل فقط عبر الإضافة الأصلية (.aex).<br>
+    هذه اللوحة لا تلتقط نقرات لوحة التكوين.
+  </div>
+
+  <button id="btn-apply" class="primary">تطبيق IconFlow Native Picker على الطبقات المحددة</button>
+  <button id="btn-clear" class="secondary">إزالة تأثيرات IconFlow Native من الطبقات المحددة</button>
+
+  <div id="status">حدّد طبقة في التكوين ثم اضغط تطبيق.</div>
+
+  <script src="js/CSInterface.js"></script>
+  <script src="js/bridge.js"></script>
+</body>
+</html>

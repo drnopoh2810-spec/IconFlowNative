@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CEP Bridge manifest for IconFlow Native Bridge (OPTIONAL companion panel).
+
+  This panel applies the native IconFlowNative.aex effect to selected layers.
+  It does NOT capture Composition-panel clicks or implement eyedropper behavior.
+  All color picking is done inside the native .aex effect via Custom Comp UI.
+
+  Install alongside IconFlowNative.aex:
+    %APPDATA%\Adobe\CEP\extensions\IconFlowNativeBridge\
+-->
+<ExtensionManifest Version="7.0"
+    ExtensionBundleId="com.iconflow.native.bridge"
+    ExtensionBundleVersion="1.5.0"
+    ExtensionBundleName="IconFlow Native Bridge">
+  <ExtensionList>
+    <Extension Id="com.iconflow.native.bridge.panel" Version="1.5.0" />
+  </ExtensionList>
+  <ExecutionEnvironment>
+    <HostList>
+      <Host Name="AEFT" Version="[17.0,99.9]" />
+    </HostList>
+    <LocaleList>
+      <Locale Code="All" />
+    </LocaleList>
+    <RequiredRuntimeList>
+      <RequiredRuntime Name="CSXS" Version="9.0" />
+    </RequiredRuntimeList>
+  </ExecutionEnvironment>
+  <DispatchInfoList>
+    <Extension Id="com.iconflow.native.bridge.panel">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./index.html</MainPath>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>true</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Panel</Type>
+          <Menu>IconFlow Native Bridge</Menu>
+          <Geometry>
+            <Size><Width>320</Width><Height>220</Height></Size>
+            <MinSize><Width>280</Width><Height>180</Height></MinSize>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+  </DispatchInfoList>
+</ExtensionManifest>

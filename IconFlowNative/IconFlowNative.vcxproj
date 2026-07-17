@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <!-- Debug config included for development convenience -->
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}</ProjectGuid>
+    <RootNamespace>IconFlowNative</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <!-- AE SDK root — set AE_SDK_ROOT env var or override here -->
+    <AeSdkRoot Condition="'$(AE_SDK_ROOT)'!=''">$(AE_SDK_ROOT)</AeSdkRoot>
+    <AeSdkRoot Condition="'$(AeSdkRoot)'==''">C:\Adobe\AfterEffectsSDK\2024</AeSdkRoot>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+
+  <!-- ── Release x64 ── -->
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+
+  <!-- ── Debug x64 ── -->
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="Shared" />
+
+  <!-- ── Release property sheets ── -->
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props"
+            Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')"
+            Label="LocalAppDataPlatform" />
+  </ImportGroup>
+
+  <!-- ── Debug property sheets ── -->
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props"
+            Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')"
+            Label="LocalAppDataPlatform" />
+  </ImportGroup>
+
+  <PropertyGroup Label="UserMacros" />
+
+  <!-- ── Output: .aex extension ── -->
+  <PropertyGroup>
+    <OutDir>$(SolutionDir)build\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\intermediate\$(Configuration)\</IntDir>
+    <TargetExt>.aex</TargetExt>
+    <TargetName>IconFlowNative</TargetName>
+  </PropertyGroup>
+
+  <!-- ── Release compile/link ── -->
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;MSWindows;NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>
+        $(AeSdkRoot)\Headers;
+        $(AeSdkRoot)\Headers\SP;
+        $(AeSdkRoot)\Resources;
+        $(AeSdkRoot)\Examples\Util;
+        $(ProjectDir)src;
+        %(AdditionalIncludeDirectories)
+      </AdditionalIncludeDirectories>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>kernel32.lib;user32.lib;shell32.lib;gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ExportNamedFunctions>EffectMain</ExportNamedFunctions>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
+    </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>
+        $(AeSdkRoot)\Headers;
+        $(AeSdkRoot)\Resources;
+        $(ProjectDir)src;
+        %(AdditionalIncludeDirectories)
+      </AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+
+  <!-- ── Debug compile/link ── -->
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;MSWindows;_DEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>
+        $(AeSdkRoot)\Headers;
+        $(AeSdkRoot)\Headers\SP;
+        $(AeSdkRoot)\Resources;
+        $(AeSdkRoot)\Examples\Util;
+        $(ProjectDir)src;
+        %(AdditionalIncludeDirectories)
+      </AdditionalIncludeDirectories>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>kernel32.lib;user32.lib;shell32.lib;gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ExportNamedFunctions>EffectMain</ExportNamedFunctions>
+    </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>
+        $(AeSdkRoot)\Headers;
+        $(AeSdkRoot)\Resources;
+        $(ProjectDir)src;
+        %(AdditionalIncludeDirectories)
+      </AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+
+  <!-- ── PiPL pre-build: generate .rr from .r ── -->
+  <ItemDefinitionGroup>
+    <PreBuildEvent>
+      <Command>
+        IF EXIST "$(AeSdkRoot)\Resources\PiPLtool.exe" (
+          "$(AeSdkRoot)\Resources\PiPLtool.exe" "$(ProjectDir)pipl\IconFlowNative.r" "$(ProjectDir)src\IconFlowNative.rr"
+          echo PiPL compiled successfully.
+        ) ELSE (
+          echo WARNING: PiPLtool.exe not found at $(AeSdkRoot)\Resources\. Run configure_windows.ps1 first.
+          IF NOT EXIST "$(ProjectDir)src\IconFlowNative.rr" (
+            echo ERROR: src\IconFlowNative.rr is missing and cannot be generated.
+            exit 1
+          )
+        )
+      </Command>
+      <Message>Generating PiPL resource (.rr) from .r file</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+
+  <!-- ── Source files ── -->
+  <ItemGroup>
+    <ClCompile Include="src\IconFlowNative.cpp" />
+    <ClCompile Include="src\Renderer.cpp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="src\IconFlowNative.h" />
+    <ClInclude Include="src\ColorMath.h" />
+    <ClInclude Include="src\Renderer.h" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ResourceCompile Include="src\IconFlowNative.rc" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="pipl\IconFlowNative.r" />
+  </ItemGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+
+</Project>
