@@ -8,6 +8,14 @@
 #include <cmath>
 #include <algorithm>
 
+// Distance modes are part of the SDK-independent color-math API so that
+// both the native effect and its standalone unit tests share one definition.
+enum DistMode {
+    DIST_RGB    = 1,
+    DIST_HUE    = 2,
+    DIST_CHROMA = 3
+};
+
 // ── Float color ───────────────────────────────────────────────────────────────
 struct ColorF {
     float r, g, b, a;
