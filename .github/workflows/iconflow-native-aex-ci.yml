@@ -1,0 +1,125 @@
+name: IconFlow Native AEX CI
+
+on:
+  pull_request:
+    paths:
+      - "IconFlowNative/**"
+      - ".github/workflows/iconflow-native-aex-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  color-math-tests:
+    name: Standalone ColorMath tests
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: IconFlowNative
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Locate MSBuild
+        id: vs
+        run: |
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
+          if (-not (Test-Path $vswhere)) {
+            throw "vswhere.exe was not found on the GitHub-hosted Windows runner."
+          }
+
+          $installPath = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
+          if (-not $installPath) {
+            throw "Visual Studio with MSBuild was not found."
+          }
+
+          $msbuild = Join-Path $installPath "MSBuild\Current\Bin\MSBuild.exe"
+          if (-not (Test-Path $msbuild)) {
+            throw "MSBuild.exe was not found at $msbuild."
+          }
+
+          "path=$msbuild" >> $env:GITHUB_OUTPUT
+
+      - name: Build standalone test executable
+        run: |
+          $arguments = @(
+            ".\tests\ColorMathTests.vcxproj",
+            "/p:Configuration=Release",
+            "/p:Platform=x64",
+            "/p:SolutionDir=$($PWD.Path)\",
+            "/m",
+            "/nologo",
+            "/v:minimal"
+          )
+          & "${{ steps.vs.outputs.path }}" @arguments
+          if ($LASTEXITCODE -ne 0) {
+            throw "ColorMathTests build failed with exit code $LASTEXITCODE."
+          }
+
+      - name: Run standalone ColorMath tests
+        run: |
+          $test = Get-ChildItem -Path .\build -Filter ColorMathTests.exe -Recurse |
+            Select-Object -First 1
+          if (-not $test) {
+            throw "ColorMathTests.exe was not produced."
+          }
+
+          & $test.FullName
+          if ($LASTEXITCODE -ne 0) {
+            throw "ColorMathTests failed with exit code $LASTEXITCODE."
+          }
+
+  build-aex:
+    name: Build IconFlowNative.aex
+    needs: color-math-tests
+    runs-on: [self-hosted, windows, x64, iconflow-ae-sdk]
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: IconFlowNative
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Validate After Effects SDK runner configuration
+        run: |
+          if (-not $env:AE_SDK_ROOT) {
+            throw "AE_SDK_ROOT is not set on this self-hosted runner."
+          }
+
+          $required = @(
+            "Headers\AE_Effect.h",
+            "Headers\AE_EffectCB.h",
+            "Resources\PiPLtool.exe"
+          )
+
+          foreach ($relativePath in $required) {
+            $candidate = Join-Path $env:AE_SDK_ROOT $relativePath
+            if (-not (Test-Path $candidate)) {
+              throw "Required AE SDK file is missing: $candidate"
+            }
+          }
+
+          Write-Host "AE SDK: $env:AE_SDK_ROOT"
+
+      - name: Build release AEX and run tests
+        run: |
+          .\build_release.ps1 -AeSdkRoot $env:AE_SDK_ROOT -Configuration Release -Platform x64 -RunTests
+
+      - name: Verify package
+        run: |
+          $aex = Get-Item .\build\Release\IconFlowNative.aex -ErrorAction Stop
+          if ($aex.Length -le 0) {
+            throw "The AEX output is empty."
+          }
+
+          $aex | Format-List FullName,Length,LastWriteTime
+
+      - name: Upload AEX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: IconFlowNative-aex
+          path: IconFlowNative/build/Release/IconFlowNative.aex
+          if-no-files-found: error

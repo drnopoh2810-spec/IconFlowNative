@@ -143,13 +143,6 @@ struct SequenceData {
     A_u_char _pad[8];
 };
 
-// ── Distance mode constants (BG popup) ───────────────────────────────────────
-enum DistMode {
-    DIST_RGB    = 1,
-    DIST_HUE    = 2,
-    DIST_CHROMA = 3
-};
-
 // ── Plugin entry point ───────────────────────────────────────────────────────
 extern "C" {
 DllExport PF_Err EffectMain(
