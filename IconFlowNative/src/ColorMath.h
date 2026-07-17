@@ -105,9 +105,16 @@ inline float bgMatteFactor(
     float softness)    // 0..1
 {
     float dist = colorDistance(pr, pg, pb, br, bg, bb, distMode);
-    float hardEdge = tolerance;
-    float softEdge = tolerance + softness;
-    return smoothStep(hardEdge, softEdge, dist);
+    // A close match is keyed out (0); a distant pixel is kept (1).
+    if (dist <= tolerance) return 0.0f;
+
+    float transition = std::max(softness, 0.0f);
+    if (transition <= 0.0f || dist >= tolerance + transition) {
+        return 1.0f;
+    }
+
+    float t = (dist - tolerance) / transition;
+    return t * t * (3.0f - 2.0f * t);
 }
 
 // ── Green spill suppressor ────────────────────────────────────────────────────
@@ -144,9 +151,18 @@ inline float colorReplaceFactor(
     float softness)   // 0..1
 {
     float dist = colorDistance(pr, pg, pb, sr, sg, sb, 1 /*RGB*/);
-    float hardEdge = tolerance;
-    float softEdge = tolerance + softness;
-    return smoothStep(softEdge, hardEdge, dist); // inverted: close → 1
+    // An exact/near source match is fully replaced (1); a distant pixel is
+    // left unchanged (0). Handle zero softness explicitly so an exact match
+    // remains replaceable instead of falling through a degenerate step.
+    if (dist <= tolerance) return 1.0f;
+
+    float transition = std::max(softness, 0.0f);
+    if (transition <= 0.0f || dist >= tolerance + transition) {
+        return 0.0f;
+    }
+
+    float t = (dist - tolerance) / transition;
+    return 1.0f - t * t * (3.0f - 2.0f * t);
 }
 
 // ── Apply color replacement ───────────────────────────────────────────────────

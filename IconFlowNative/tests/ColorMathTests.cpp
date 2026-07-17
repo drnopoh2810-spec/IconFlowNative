@@ -244,10 +244,12 @@ static void test_applyColorReplace()
     applyColorReplace(r, g, b, 0, 0, 1, 0.0f, false);
     CHECK(colorNear(r, g, b, 1, 0, 0));
 
-    // Preserve luminance: output luminance ≈ input luminance
-    r = 1; g = 1; b = 1;  // white, lum=1
+    // Preserve luminance for an in-gamut target. A saturated purple cannot
+    // retain white's luminance in RGB [0, 1] without clipping, so use a
+    // mid-gray source and a lighter purple that can be normalized exactly.
+    r = 0.5f; g = 0.5f; b = 0.5f;
     float origLum = luminance(r, g, b);
-    applyColorReplace(r, g, b, 0.5f, 0.0f, 0.5f, 1.0f, true);
+    applyColorReplace(r, g, b, 0.5f, 0.4f, 0.5f, 1.0f, true);
     float newLum = luminance(r, g, b);
     CHECK_NEAR(newLum, origLum, 0.05f);
 }
